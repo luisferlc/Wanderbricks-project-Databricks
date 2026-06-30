@@ -1,9 +1,8 @@
 # Databricks notebook source
-
 import sys
 import uuid
 
-PROJECT_ROOT = "/Workspace/Repos/luisferlc1515@hotmail.com/wanderbricks-project"
+PROJECT_ROOT = "/Workspace/Users/luisferlc1515@hotmail.com/Wanderbricks-project-Databricks"
 sys.path.append(PROJECT_ROOT)
 
 from src.core.config_loader import load_config, validate_config, get_enabled_tables
@@ -17,6 +16,23 @@ validate_config(config)
 tables = get_enabled_tables(config)
 
 RUN_ID = str(uuid.uuid4())
+
+# Create catalog and schemas if not exist
+
+target_catalog = config["target"]["catalog"]
+bronze_schema = config["target"]["bronze_schema"]
+audit_schema = config["target"]["audit_schema"]
+quarantine_schema = config["target"]["quarantine_schema"]
+
+# Create catalog
+spark.sql(f"CREATE CATALOG IF NOT EXISTS {target_catalog}")
+
+# Create schemas
+spark.sql(f"CREATE SCHEMA IF NOT EXISTS {target_catalog}.{bronze_schema}")
+spark.sql(f"CREATE SCHEMA IF NOT EXISTS {target_catalog}.{audit_schema}")
+spark.sql(f"CREATE SCHEMA IF NOT EXISTS {target_catalog}.{quarantine_schema}")
+
+print("✅ Catalog and schemas created (if not existing)")
 
 for t in tables:
     ingest_table(spark, t, config, RUN_ID)
