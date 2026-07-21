@@ -1,5 +1,5 @@
 from pyspark.sql import functions as F
-from pyspark.sql.types import StringType
+from pyspark.sql.types import StringType, FloatType, DoubleType, DecimalType
 
 
 def standardize_column_names(df):
@@ -73,26 +73,31 @@ def lowercase_email_columns(df):
 
     return df
 
-def round_float_columns(df):
-    """
-    Rounds to 2 decimals 'total_amount' from bookings, 'rating' from hosts and 'base_price' from properties table.
 
-    Example:
-    15.6665568
-    =>
-    16.70
-    """
+def round_float_columns(
+    df,
+    decimals=2
+):
 
-    float_columns = [
-        "total_amount", "rating", "base_price"
-    ]
+decimal_types = (
+        FloatType,
+        DoubleType,
+        DecimalType
+    )
 
-    df_columns = [c for c in df.columns]
+    for field in df.schema.fields:
 
-    for col_name in float_columns:
-        if col_name in df_columns:
-            df = df.withColumn(col_name, round(F.col(col_name), 2))
-        else:
-            pass
-    
+        if isinstance(
+            field.dataType,
+            decimal_types
+        ):
+
+            df = df.withColumn(
+                field.name,
+                F.round(
+                    F.col(field.name),
+                    decimals
+                )
+            )
+
     return df
