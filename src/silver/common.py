@@ -79,15 +79,16 @@ def round_float_columns(
     decimals=2
 ):
     
-    columns_to_transform = [c for c in df.columns if c in ("total_amount", "rating", "base_price")]
+    columns_to_transform = ["total_amount", "rating", "base_price"]
     
     for c in columns_to_transform:
-        df = df.withColumn(
-            c,
-            F.round(
-                F.col(c),
-                decimals
+        if c in df.columns:
+            df = df.withColumn(
+                c,
+                F.round(
+                    F.col(c),
+                    decimals
+                )
             )
-        )
 
     return df
