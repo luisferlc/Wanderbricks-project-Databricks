@@ -72,3 +72,27 @@ def lowercase_email_columns(df):
         )
 
     return df
+
+def round_float_columns(df):
+    """
+    Rounds to 2 decimals 'total_amount' from bookings, 'rating' from hosts and 'base_price' from properties table.
+
+    Example:
+    15.6665568
+    =>
+    16.70
+    """
+
+    float_columns = [
+        "total_amount", "rating", "base_price"
+    ]
+
+    df_columns = [c for c in df.columns]
+
+    for col_name in float_columns:
+        if col_name in df_columns:
+            df = df.withColumn(col_name, round(F.col(col_name), 2))
+        else:
+            pass
+    
+    return df

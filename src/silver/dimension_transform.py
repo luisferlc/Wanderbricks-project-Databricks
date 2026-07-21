@@ -1,7 +1,8 @@
 from src.silver.common import (
     standardize_column_names,
     trim_string_columns,
-    lowercase_email_columns
+    lowercase_email_columns,
+    round_float_columns
 )
 
 from src.utils.validation import (
@@ -49,6 +50,11 @@ def transform_dimension(
     # -------------------------
 
     df = lowercase_email_columns(df)
+
+    # -------------------------
+    # Round float columns
+    # -------------------------
+    df = round_float_columns(df)
 
     # -------------------------
     # Rejects
