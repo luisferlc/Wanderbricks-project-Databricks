@@ -1,0 +1,41 @@
+{
+  "source": {
+    "catalog": "medallion_demo",
+    "schema": "bronze"
+  },
+  "target": {
+    "catalog": "medallion_demo",
+    "silver_schema": "silver",
+    "audit_schema": "audit",
+    "quarantine_schema": "quarantine"
+  },
+  "load": {
+    "load_type": "FULL"
+  },
+  "tables": [
+    {
+      "source_table": "users_raw",
+      "target_table": "users",
+      "key_columns": ["user_id"],
+      "enabled": true
+    },
+    {
+      "source_table": "hosts_raw",
+      "target_table": "hosts",
+      "key_columns": ["host_id"],
+      "enabled": true
+    },
+    {
+      "source_table": "properties_raw",
+      "target_table": "properties",
+      "key_columns": ["property_id"],
+      "enabled": true
+    },
+    {
+      "source_table": "destinations_raw",
+      "target_table": "destinations",
+      "key_columns": ["destination_id"],
+      "enabled": true
+    }
+  ]
+}
