@@ -78,26 +78,16 @@ def round_float_columns(
     df,
     decimals=2
 ):
-
-decimal_types = (
-        FloatType,
-        DoubleType,
-        DecimalType
-    )
-
-    for field in df.schema.fields:
-
-        if isinstance(
-            field.dataType,
-            decimal_types
-        ):
-
-            df = df.withColumn(
-                field.name,
-                F.round(
-                    F.col(field.name),
-                    decimals
-                )
+    
+    columns_to_transform = [c for c in df.columns if c in ("total_amount", "rating", "base_price")]
+    
+    for c in columns_to_transform:
+        df = df.withColumn(
+            c,
+            F.round(
+                F.col(c),
+                decimals
             )
+        )
 
     return df
