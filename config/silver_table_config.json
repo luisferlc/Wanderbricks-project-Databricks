@@ -36,6 +36,12 @@
       "target_table": "destinations",
       "key_columns": ["destination_id"],
       "enabled": true
+    },
+    {
+      "source_table": "bookings_raw",
+      "target_table": "bookings",
+      "key_columns": ["booking_id"],
+      "enabled": true
     }
   ]
 }

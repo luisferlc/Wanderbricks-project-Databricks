@@ -1,5 +1,4 @@
 # Databricks notebook source
-
 import sys
 import uuid
 
@@ -35,7 +34,7 @@ from src.silver.dimension_ingestion import (
 
 CONFIG_PATH = (
     f"{PROJECT_ROOT}/config/"
-    f"silver_dimension_config.json"
+    f"silver_table_config.json"
 )
 
 config = load_config(CONFIG_PATH)
