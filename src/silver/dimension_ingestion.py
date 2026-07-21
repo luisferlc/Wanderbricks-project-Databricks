@@ -1,14 +1,7 @@
-from src.silver.dimension_transform import (
-    transform_dimension
-)
-
-from src.silver.dimension_writer import (
-    write_dimension
-)
-
-from src.utils.audit import (
-    log_audit
-)
+from src.silver.dimension_transform import transform_dimension
+from src.silver.dimension_writer import write_dimension
+from src.utils.audit import log_audit
+from src.utils.metadata import add_metadata
 
 
 def ingest_dimension(
@@ -65,6 +58,16 @@ def ingest_dimension(
         # ---------------------------------
 
         df = spark.table(source_table)
+
+        # -------------------
+        # Add Metadata
+        # -------------------
+        df = add_metadata(
+            df,
+            run_id,
+            config["load"]["load_type"],
+            source_table
+        )
 
         # ---------------------------------
         # Transform
