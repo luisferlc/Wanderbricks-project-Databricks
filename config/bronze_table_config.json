@@ -19,6 +19,6 @@
     {"source_table": "properties", "target_table": "properties_raw", "key_columns": ["property_id"], "enabled": true},
     {"source_table": "destinations", "target_table": "destinations_raw", "key_columns": ["destination_id"], "enabled": true},
     {"source_table": "bookings", "target_table": "bookings_raw", "key_columns": ["booking_id"], "enabled": true},
-    {"source_table": "reviews", "target_table": "reviews_raw", "key_columns": ["booking_id"], "enabled": true}
+    {"source_table": "reviews", "target_table": "reviews_raw", "key_columns": ["review_id"], "enabled": true}
   ]
 }

@@ -5,32 +5,32 @@ from src.utils.audit import log_audit
 
 def ingest_table(
     spark,
+    config_table,
     config,
-    pipeline_config,
     run_id
 ):
 
     source = (
-        f"{pipeline_config['source']['catalog']}."
-        f"{pipeline_config['source']['schema']}."
-        f"{config['source_table']}"
+        f"{config['source']['catalog']}."
+        f"{config['source']['schema']}."
+        f"{config_table['source_table']}"
     )
 
     target = (
-        f"{pipeline_config['target']['catalog']}."
-        f"{pipeline_config['target']['bronze_schema']}."
-        f"{config['target_table']}"
+        f"{config['target']['catalog']}."
+        f"{config['target']['bronze_schema']}."
+        f"{config_table['target_table']}"
     )
 
     reject = (
-        f"{pipeline_config['target']['catalog']}."
-        f"{pipeline_config['target']['quarantine_schema']}."
-        f"{config['target_table']}_reject"
+        f"{config['target']['catalog']}."
+        f"{config['target']['quarantine_schema']}."
+        f"{config_table['target_table']}_reject"
     )
 
     audit_table = (
-        f"{pipeline_config['target']['catalog']}."
-        f"{pipeline_config['target']['audit_schema']}."
+        f"{config['target']['catalog']}."
+        f"{config['target']['audit_schema']}."
         f"bronze_ingestion_log"
     )
 
@@ -43,13 +43,13 @@ def ingest_table(
         df = add_metadata(
             df,
             run_id,
-            pipeline_config["load"]["load_type"],
+            config["load"]["load_type"],
             source
         )
 
         valid_df, reject_df = split_rejects(
             df,
-            config.get("key_columns")
+            config_table.get("key_columns")
         )
 
         valid_df.write.mode(
