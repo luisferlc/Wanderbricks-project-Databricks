@@ -42,6 +42,12 @@
       "target_table": "bookings",
       "key_columns": ["booking_id"],
       "enabled": true
+    },
+    {
+      "source_table": "reviews_raw",
+      "target_table": "reviews",
+      "key_columns": ["booking_id"],
+      "enabled": true
     }
   ]
 }
