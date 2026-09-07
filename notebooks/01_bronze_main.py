@@ -5,13 +5,21 @@ import uuid
 PROJECT_ROOT = "/Workspace/Users/luisferlc1515@hotmail.com/Wanderbricks-project-Databricks"
 sys.path.append(PROJECT_ROOT)
 
-from src.core.config_loader import load_config, validate_config, get_enabled_tables
+from src.core.config_loader import load_config, validate_config, get_enabled_tables, validate_table_config
 from src.bronze.ingestion import ingest_table
 
 CONFIG_PATH = f"{PROJECT_ROOT}/config/bronze_table_config.json"
 
 config = load_config(CONFIG_PATH)
 validate_config(config)
+validate_table_config(
+    config,
+    [
+        "source_table",
+        "target_table",
+        "key_columns"
+    ]
+)
 
 tables = get_enabled_tables(config)
 
