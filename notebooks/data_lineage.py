@@ -1,4 +1,8 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "5"
+# ///
 # MAGIC %md
 # MAGIC # Tabla de Linaje de Datos — Source → Bronze → Silver
 # MAGIC
@@ -48,15 +52,20 @@
 
 # COMMAND ----------
 
-dbutils.widgets.text("config_path", "../config", "Carpeta de configuración")
-dbutils.widgets.text("source_to_bronze_file", "source_to_bronze.json", "JSON Source→Bronze")
-dbutils.widgets.text("bronze_to_silver_file", "bronze_to_silver.json", "JSON Bronze→Silver")
-dbutils.widgets.text("lineage_table", "medallion_demo.audit.data_lineage", "Tabla de linaje destino (catalog.schema.tabla)")
+# -------------------------------------------------------
+# Project Root (igual que en 01_bronze_main y 02_silver_dimensions_main)
+# -------------------------------------------------------
 
-config_path            = dbutils.widgets.get("config_path")
-source_to_bronze_file  = dbutils.widgets.get("source_to_bronze_file")
-bronze_to_silver_file  = dbutils.widgets.get("bronze_to_silver_file")
-lineage_table_name     = dbutils.widgets.get("lineage_table")
+PROJECT_ROOT = "/Workspace/Users/luisferlc1515@hotmail.com/Wanderbricks-project-Databricks"
+
+# -------------------------------------------------------
+# Configuration Paths
+# -------------------------------------------------------
+
+config_path = f"{PROJECT_ROOT}/config"
+source_to_bronze_file = "bronze_table_config.json"  # Archivo real en config/
+bronze_to_silver_file = "silver_table_config.json"  # Archivo real en config/
+lineage_table_name = "medallion_demo.audit.data_lineage"
 
 # COMMAND ----------
 
@@ -245,10 +254,66 @@ lineage_schema = StructType([
     StructField("enabled",           BooleanType(), True),
 ])
 
+from datetime import datetime
+
+lineage_df = spark.createDataFrame([Row(**r) for r in lineage_rows], schema=lineage_schema)
+
+# -------------------------------------------------------
+# Obtener el timestamp más reciente de cada tabla target
+# -------------------------------------------------------
+
+print("Buscando timestamps más recientes de cada tabla...")
+
+# Obtener timestamp actual de Python para casos fallback
+current_ts = datetime.now()
+
+timestamp_data = []
+for row in lineage_rows:
+    target_full_name = f"{row['target_catalog']}.{row['target_schema']}.{row['target_table']}"
+    
+    try:
+        # Intentar obtener el MAX(_ingestion_ts) de la tabla target
+        max_ts_df = spark.sql(f"""
+            SELECT MAX(_ingestion_ts) as max_ingestion_ts
+            FROM {target_full_name}
+        """)
+        
+        max_ts = max_ts_df.first()["max_ingestion_ts"]
+        
+        if max_ts is None:
+            # Si la tabla está vacía, usar NULL
+            print(f"  ⚠️  {target_full_name}: tabla vacía, usando NULL")
+        else:
+            print(f"  ✅ {target_full_name}: {max_ts}")
+            
+    except Exception as e:
+        # Si la tabla no existe o no tiene columna ingestion_ts, usar NULL
+        print(f"  ⚠️  {target_full_name}: error ({str(e)[:50]}...), usando NULL")
+        max_ts = None
+    
+    timestamp_data.append({
+        "target_catalog": row["target_catalog"],
+        "target_schema": row["target_schema"],
+        "target_table": row["target_table"],
+        "_load_timestamp": max_ts
+    })
+
+# Crear DataFrame con los timestamps
+timestamp_df = spark.createDataFrame([Row(**t) for t in timestamp_data])
+
+# Join con el lineage_df para agregar los timestamps
 lineage_df = (
-    spark.createDataFrame([Row(**r) for r in lineage_rows], schema=lineage_schema)
-    .withColumn("_load_timestamp", F.current_timestamp())
+    lineage_df.join(
+        timestamp_df,
+        on=["target_catalog", "target_schema", "target_table"],
+        how="left"
+    )
 )
+
+# Mantener NULL cuando no hay timestamp disponible
+# lineage_df ya tiene la columna _load_timestamp del join, con NULLs donde corresponda
+
+print("\n✅ Timestamps actualizados con valores de ingestion_ts\n")
 
 display(lineage_df.orderBy("pipeline_stage", "source_table"))
 
